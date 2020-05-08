@@ -17,14 +17,14 @@ from util.requestUtil import user_agent
 
 class Spider:
     def __init__(self):
-        self.host = 'http://www.xbiquge.la'
+        self.host = 'http://www.dingdianxs.com/'
         self.headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
             'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
-            'Host': 'www.xbiquge.la',
+            'Host': 'www.dingdianxs.com',
             'Pragma': 'no-cache',
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': user_agent()
@@ -74,16 +74,16 @@ class Spider:
         fiction_url = ''
         fiction_name = ''
         keyword = kwargs['keyword']
-        url = 'http://www.xbiquge.la/modules/article/waps.php'
-        post_data = {
+        url_params = {
             'searchkey': keyword
         }
-        data = self.session_resource.post(url=url,data=post_data)
+        url = parse.urljoin(self.host, '/modules/article/search.php?' + parse.urlencode(url_params))
+        data = self.session_resource.get(url=url)
         soup = bs(data.content, 'html5lib')
-        search_result = soup.select('.even')
+        search_result = soup.select('.novelslistss > li > .s2 > a')
         if len(search_result) > 0:
-            fiction_url = parse.urlparse(search_result[0].contents[0]['href']).path
-            fiction_name = search_result[0].contents[0].string
+            fiction_url = search_result[0]['href']
+            fiction_name = search_result[0].string
 
         return {
             'fiction_url': fiction_url,
@@ -91,12 +91,14 @@ class Spider:
         }
 
 
+# test
 if __name__ == '__main__':
     fiction_url = '43/43943/'
     chapter_url = '19553404'
     # result = Spider().pull_chatper(fiction_url='43/43943/')
     # print(result)
     result = Spider().pull_fiction(keyword='绝对一番')
+    # result = Spider().search(keyword='绝对一番')
     print(result)
     # result = Spider().pull_chapter_content(fiction_url=fiction_url, chapter_url=chapter_url)
     # print(result)
