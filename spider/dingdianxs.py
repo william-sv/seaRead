@@ -12,8 +12,10 @@ import requests
 import random
 import re
 from urllib import parse
+import unicodedata
 from bs4 import BeautifulSoup as bs
 from util.requestUtil import user_agent
+
 
 class Spider:
     def __init__(self):
@@ -79,6 +81,7 @@ class Spider:
         intro = re.sub(r'<div id="intro">', '', str(intro))
         intro = re.sub(r'</div>', '', str(intro))
         intro = re.sub(r'\s', '', str(intro))
+        # intro = unicodedata.normalize('NFKC', str(intro))
         return {
             'cover': cover,
             'author': author,

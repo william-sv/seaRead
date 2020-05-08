@@ -108,6 +108,7 @@ class Spider:
             'fiction_name': fiction_name
         }
 
+
 # test
 if __name__ == '__main__':
     fiction_url = '43/43943/'
