@@ -41,6 +41,12 @@ class Spider:
         chapters = self.pull_chatper(fiction_url=search_result['fiction_url'])
         fiction_data['name'] = search_result['fiction_name']
         fiction_data['fiction_url'] = search_result['fiction_url']
+        fiction_info = self.pull_fiction_info(fiction_url=search_result['fiction_url'])
+        fiction_data['name'] = search_result['fiction_name']
+        fiction_data['fiction_url'] = search_result['fiction_url']
+        fiction_data['cover'] = fiction_info['cover']
+        fiction_data['author'] = fiction_info['author']
+        fiction_data['intro'] = fiction_info['intro']
         fiction_data['chapters'] = chapters
         return fiction_data
 
@@ -59,6 +65,25 @@ class Spider:
                 'chapter_name': chapter_name
             })
         return chapters
+
+    def pull_fiction_info(self, **kwargs):
+        fiction_url = parse.urljoin(self.host, kwargs['fiction_url'])
+        data = self.session_resource.get(url=fiction_url)
+        soup = bs(data.content, 'html5lib')
+        fiction_id = kwargs['fiction_url'].split('/')[1]
+        cover = self.host + '/files/article/image/' + kwargs['fiction_url'] + fiction_id + '.jpg'
+        author = soup.select('#maininfo > #info > p')[0].string.split('：')[1]
+        intro = soup.select('#maininfo > #info > #intro')[0]
+        intro = re.sub(r'<a.*</a>', '', str(intro))
+        intro = re.sub(r'<br/>', '', str(intro))
+        intro = re.sub(r'<div id="intro">', '', str(intro))
+        intro = re.sub(r'</div>', '', str(intro))
+        intro = re.sub(r'\s', '', str(intro))
+        return {
+            'cover': cover,
+            'author': author,
+            'intro': intro
+        }
 
     def pull_chapter_content(self, **kwargs):
         chapter_url = parse.urljoin(self.host, kwargs['fiction_url'] + '/' +kwargs['chapter_url'] + '.html')

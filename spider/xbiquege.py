@@ -39,8 +39,12 @@ class Spider:
         if search_result['fiction_name'] == '':
             print('未检索到 ' + keyword + ' 书籍！')
         chapters = self.pull_chatper(fiction_url=search_result['fiction_url'])
+        fiction_info = self.pull_fiction_info(fiction_url=search_result['fiction_url'])
         fiction_data['name'] = search_result['fiction_name']
         fiction_data['fiction_url'] = search_result['fiction_url']
+        fiction_data['cover'] = fiction_info['cover']
+        fiction_data['author'] = fiction_info['author']
+        fiction_data['intro'] = fiction_info['intro']
         fiction_data['chapters'] = chapters
         return fiction_data
 
@@ -59,6 +63,20 @@ class Spider:
                 'chapter_name': chapter_name
             })
         return chapters
+
+    def pull_fiction_info(self, **kwargs):
+        fiction_url = parse.urljoin(self.host, kwargs['fiction_url'])
+        data = self.session_resource.get(url=fiction_url)
+        soup = bs(data.content, 'html5lib')
+        fiction_id = kwargs['fiction_url'].split('/')[-2]
+        cover = self.host + '/files/article/image' + kwargs['fiction_url'] + fiction_id + '.jpg'
+        author = soup.select('#maininfo > #info > p')[0].string.split('：')[1]
+        intro = soup.select('#maininfo > #intro > p')[1].string.strip()
+        return {
+            'cover': cover,
+            'author': author,
+            'intro': intro
+        }
 
     def pull_chapter_content(self, **kwargs):
         chapter_url = parse.urljoin(self.host, kwargs['fiction_url'] + '/' +kwargs['chapter_url'] + '.html')
@@ -90,13 +108,13 @@ class Spider:
             'fiction_name': fiction_name
         }
 
-
+# test
 if __name__ == '__main__':
     fiction_url = '43/43943/'
     chapter_url = '19553404'
     # result = Spider().pull_chatper(fiction_url='43/43943/')
-    # print(result)
     result = Spider().pull_fiction(keyword='绝对一番')
-    print(result)
+    # result = Spider().pull_fiction_info(fiction_url='43/43943/')
     # result = Spider().pull_chapter_content(fiction_url=fiction_url, chapter_url=chapter_url)
-    # print(result)
+    print(result)
+
