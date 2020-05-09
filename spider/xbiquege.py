@@ -9,11 +9,11 @@
 """
 
 import requests
-import random
 import re
 from urllib import parse
 from bs4 import BeautifulSoup as bs
 from util.requestUtil import user_agent
+
 
 class Spider:
     def __init__(self):
@@ -34,14 +34,11 @@ class Spider:
 
     def pull_fiction(self, **kwargs):
         fiction_data = {}
-        keyword = kwargs['keyword']
-        search_result = self.search(keyword=keyword)
-        if search_result['fiction_name'] == '':
-            print('未检索到 ' + keyword + ' 书籍！')
-        chapters = self.pull_chatper(fiction_url=search_result['fiction_url'])
-        fiction_info = self.pull_fiction_info(fiction_url=search_result['fiction_url'])
-        fiction_data['name'] = search_result['fiction_name']
-        fiction_data['fiction_url'] = search_result['fiction_url']
+        fiction_url = kwargs['fiction_url']
+        chapters = self.pull_chatper(fiction_url=fiction_url)
+        fiction_info = self.pull_fiction_info(fiction_url=fiction_url)
+        fiction_data['fiction_url'] = fiction_url
+        fiction_data['name'] = fiction_info['name']
         fiction_data['cover'] = fiction_info['cover']
         fiction_data['author'] = fiction_info['author']
         fiction_data['intro'] = fiction_info['intro']
@@ -69,10 +66,12 @@ class Spider:
         data = self.session_resource.get(url=fiction_url)
         soup = bs(data.content, 'html5lib')
         fiction_id = kwargs['fiction_url'].split('/')[-2]
+        name = soup.select('#maininfo > #info > h1')[0].string
         cover = self.host + '/files/article/image' + kwargs['fiction_url'] + fiction_id + '.jpg'
         author = soup.select('#maininfo > #info > p')[0].string.split('：')[1]
         intro = soup.select('#maininfo > #intro > p')[1].string.strip()
         return {
+            'name': name,
             'cover': cover,
             'author': author,
             'intro': intro
@@ -113,9 +112,6 @@ class Spider:
 if __name__ == '__main__':
     fiction_url = '43/43943/'
     chapter_url = '19553404'
-    # result = Spider().pull_chatper(fiction_url='43/43943/')
-    result = Spider().pull_fiction(keyword='绝对一番')
-    # result = Spider().pull_fiction_info(fiction_url='43/43943/')
-    # result = Spider().pull_chapter_content(fiction_url=fiction_url, chapter_url=chapter_url)
+    result = Spider().pull_fiction(fiction_url=fiction_url)
     print(result)
 

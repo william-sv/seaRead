@@ -9,10 +9,8 @@
 """
 
 import requests
-import random
 import re
 from urllib import parse
-import unicodedata
 from bs4 import BeautifulSoup as bs
 from util.requestUtil import user_agent
 
@@ -36,16 +34,12 @@ class Spider:
 
     def pull_fiction(self, **kwargs):
         fiction_data = {}
-        keyword = kwargs['keyword']
-        search_result = self.search(keyword=keyword)
-        if search_result['fiction_name'] == '':
-            print('未检索到 ' + keyword + ' 书籍！')
-        chapters = self.pull_chatper(fiction_url=search_result['fiction_url'])
-        fiction_data['name'] = search_result['fiction_name']
-        fiction_data['fiction_url'] = search_result['fiction_url']
-        fiction_info = self.pull_fiction_info(fiction_url=search_result['fiction_url'])
-        fiction_data['name'] = search_result['fiction_name']
-        fiction_data['fiction_url'] = search_result['fiction_url']
+        fiction_url = kwargs['fiction_url']
+        chapters = self.pull_chatper(fiction_url=fiction_url)
+        fiction_data['fiction_url'] = fiction_url
+        fiction_info = self.pull_fiction_info(fiction_url=fiction_url)
+        fiction_data['name'] = fiction_info['name']
+        fiction_data['fiction_url'] = fiction_url
         fiction_data['cover'] = fiction_info['cover']
         fiction_data['author'] = fiction_info['author']
         fiction_data['intro'] = fiction_info['intro']
@@ -74,6 +68,7 @@ class Spider:
         soup = bs(data.content, 'html5lib')
         fiction_id = kwargs['fiction_url'].split('/')[1]
         cover = self.host + '/files/article/image/' + kwargs['fiction_url'] + fiction_id + '.jpg'
+        name = soup.select('#maininfo > #info > h1')[0].string
         author = soup.select('#maininfo > #info > p')[0].string.split('：')[1]
         intro = soup.select('#maininfo > #info > #intro')[0]
         intro = re.sub(r'<a.*</a>', '', str(intro))
@@ -83,6 +78,7 @@ class Spider:
         intro = re.sub(r'\s', '', str(intro))
         # intro = unicodedata.normalize('NFKC', str(intro))
         return {
+            'name': name,
             'cover': cover,
             'author': author,
             'intro': intro
@@ -121,12 +117,7 @@ class Spider:
 
 # test
 if __name__ == '__main__':
-    fiction_url = '43/43943/'
-    chapter_url = '19553404'
-    # result = Spider().pull_chatper(fiction_url='43/43943/')
-    # print(result)
-    result = Spider().pull_fiction(keyword='绝对一番')
+    fiction_url = '52/52833/'
+    result = Spider().pull_fiction(fiction_url=fiction_url)
     # result = Spider().search(keyword='绝对一番')
     print(result)
-    # result = Spider().pull_chapter_content(fiction_url=fiction_url, chapter_url=chapter_url)
-    # print(result)
