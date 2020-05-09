@@ -97,6 +97,7 @@ class Spider:
     def search(self, **kwargs):
         fiction_url = ''
         fiction_name = ''
+        last_chapter = ''
         keyword = kwargs['keyword']
         url_params = {
             'searchkey': keyword
@@ -104,20 +105,22 @@ class Spider:
         url = parse.urljoin(self.host, '/modules/article/search.php?' + parse.urlencode(url_params))
         data = self.session_resource.get(url=url)
         soup = bs(data.content, 'html5lib')
-        search_result = soup.select('.novelslistss > li > .s2 > a')
-        if len(search_result) > 0:
-            fiction_url = search_result[0]['href']
-            fiction_name = search_result[0].string
-
+        if len(soup.select('.novelslistss > li')) > 0:
+            tmp_ele = soup.select('.novelslistss > li')[0]
+            fiction_info_ele = tmp_ele.select('span')
+            fiction_url = fiction_info_ele[1].select('a')[0]['href']
+            fiction_name = fiction_info_ele[1].select('a')[0].string
+            last_chapter = fiction_info_ele[2].select('a')[0].string
         return {
             'fiction_url': fiction_url,
-            'fiction_name': fiction_name
+            'fiction_name': fiction_name,
+            'last_chapter': last_chapter
         }
 
 
 # test
 if __name__ == '__main__':
     fiction_url = '52/52833/'
-    result = Spider().pull_fiction(fiction_url=fiction_url)
-    # result = Spider().search(keyword='绝对一番')
+    # result = Spider().pull_fiction(fiction_url=fiction_url)
+    result = Spider().search(keyword='绝对一番')
     print(result)

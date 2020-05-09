@@ -90,6 +90,7 @@ class Spider:
     def search(self, **kwargs):
         fiction_url = ''
         fiction_name = ''
+        last_chapter = ''
         keyword = kwargs['keyword']
         url = 'http://www.xbiquge.la/modules/article/waps.php'
         post_data = {
@@ -97,14 +98,17 @@ class Spider:
         }
         data = self.session_resource.post(url=url,data=post_data)
         soup = bs(data.content, 'html5lib')
-        search_result = soup.select('.even')
-        if len(search_result) > 0:
-            fiction_url = parse.urlparse(search_result[0].contents[0]['href']).path
-            fiction_name = search_result[0].contents[0].string
-
+        if len(soup.select('.grid > tbody > tr')) > 1:
+            tmp_ele = soup.select('.grid > tbody > tr')[1]
+            fiction_info_ele = tmp_ele.select('td')[0]
+            fiction_url = fiction_info_ele.select('a')[0].string
+            fiction_name = fiction_info_ele.select('a')[0]['href']
+            last_chapter_ele = tmp_ele.select('td')[1]
+            last_chapter = last_chapter_ele.select('a')[0].string
         return {
             'fiction_url': fiction_url,
-            'fiction_name': fiction_name
+            'fiction_name': fiction_name,
+            'last_chapter': last_chapter
         }
 
 
@@ -112,6 +116,8 @@ class Spider:
 if __name__ == '__main__':
     fiction_url = '43/43943/'
     chapter_url = '19553404'
-    result = Spider().pull_fiction(fiction_url=fiction_url)
+    # result = Spider().pull_fiction(fiction_url=fiction_url)
+    keyword = '烂柯棋缘'
+    result = Spider().search(keyword=keyword)
     print(result)
 
