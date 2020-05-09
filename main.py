@@ -8,17 +8,29 @@
 @Desc      : 
 """
 
+import time
+import threading
 from spider.xbiquege import Spider as xbiquege_spider
 from spider.dingdianxs import Spider as dingdianxs_sipder
 
+result = []
 
-def search(keyword):
-    result = {'xbiquege': xbiquege_spider().search(keyword=keyword),
-              'dingdianxs': dingdianxs_sipder().search(keyword=keyword)}
-    return result
+
+def search(keyword,tag):
+    if tag == 'xbiquege':
+        result.append(xbiquege_spider().search(keyword=keyword))
+    if tag == 'dingdianxs':
+        result.append(dingdianxs_sipder().search(keyword=keyword))
 
 
 if __name__ == '__main__':
     keyword = '烂柯棋缘'
-    result = search(keyword)
+    thread1 = threading.Thread(target=search, args=(keyword,'xbiquege'))
+    thread2 = threading.Thread(target=search, args=(keyword,'dingdianxs'))
+    thread1.start()
+    thread2.start()
+    threads = [thread1, thread2]
+    for t in threads:
+        t.join()
     print(result)
+    et = time.time()
