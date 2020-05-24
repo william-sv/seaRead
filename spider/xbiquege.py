@@ -101,8 +101,8 @@ class Spider:
         if len(soup.select('.grid > tbody > tr')) > 1:
             tmp_ele = soup.select('.grid > tbody > tr')[1]
             fiction_info_ele = tmp_ele.select('td')[0]
-            fiction_url = fiction_info_ele.select('a')[0].string
-            fiction_name = fiction_info_ele.select('a')[0]['href']
+            fiction_name = fiction_info_ele.select('a')[0].string
+            fiction_url = fiction_info_ele.select('a')[0]['href']
             last_chapter_ele = tmp_ele.select('td')[1]
             last_chapter = last_chapter_ele.select('a')[0].string
         return {

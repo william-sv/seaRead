@@ -127,3 +127,5 @@ dmypy.json
 # idea
 .idea
 
+# secret store
+sercet_store
